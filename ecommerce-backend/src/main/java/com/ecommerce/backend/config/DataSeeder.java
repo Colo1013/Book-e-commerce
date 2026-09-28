@@ -18,10 +18,27 @@ import java.math.BigDecimal;
 public class DataSeeder implements CommandLineRunner {
 
     private final BookService bookService;
+    private final com.ecommerce.backend.repository.UserRepository userRepository;
+    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
     @Override
     public void run(String... args) throws Exception {
-        // Se il database è vuoto, inseriamo alcuni libri fittizi
+        
+        // 1. SEEDING DEGLI UTENTI (Il Paziente Zero)
+        if (userRepository.findByEmail("admin@ecommerce.com").isEmpty()) {
+            com.ecommerce.backend.model.User admin = com.ecommerce.backend.model.User.builder()
+                    .firstName("Super")
+                    .lastName("Admin")
+                    .email("admin@ecommerce.com")
+                    .password(passwordEncoder.encode("admin123")) // Criptiamo sempre la password!
+                    .role(com.ecommerce.backend.model.Role.ADMIN) // Assegnazione forzata del ruolo
+                    .build();
+            
+            userRepository.save(admin);
+            System.out.println("✅ SECURITY SEEDING: Creato utente ADMIN di default (admin@ecommerce.com / admin123)");
+        }
+
+        // 2. SEEDING DEI LIBRI
         if (bookService.getAllBooks().isEmpty()) {
             
             BookRequestDTO book1 = new BookRequestDTO();
@@ -38,7 +55,6 @@ public class DataSeeder implements CommandLineRunner {
             book2.setPrice(new BigDecimal("15.00"));
             book2.setStockQuantity(5);
             
-            // Usiamo il Service così viene applicata tutta la logica di conversione e salvataggio
             bookService.createBook(book1);
             bookService.createBook(book2);
             

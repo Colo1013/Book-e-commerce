@@ -13,8 +13,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Implementazione concreta della logica di business.
- * Questa classe orchestra il flusso dei dati tra il database (tramite Repository)
+ * Questa classe orchestra il flusso dei dati tra il database (tramite
+ * Repository)
  * e il mondo esterno (tramite Mapper e DTO).
  */
 @Service
@@ -37,8 +37,8 @@ public class BookServiceImpl implements BookService {
     @Transactional(readOnly = true)
     public BookResponseDTO getBookByIsbn(String isbn) {
         Book book = bookRepository.findByIsbn(isbn)
-                .orElseThrow(() -> new com.ecommerce.backend.exception.ResourceNotFoundException("Libro con ISBN " + isbn + " non trovato"));
-        
+                .orElseThrow(() -> new RuntimeException("Libro con ISBN " + isbn + " non trovato"));
+
         return bookMapper.toResponseDTO(book);
     }
 
@@ -47,15 +47,15 @@ public class BookServiceImpl implements BookService {
     public BookResponseDTO createBook(BookRequestDTO bookRequestDTO) {
         // Controllo se l'ISBN esiste già
         if (bookRepository.findByIsbn(bookRequestDTO.getIsbn()).isPresent()) {
-            throw new com.ecommerce.backend.exception.DuplicateResourceException("Esiste già un libro con ISBN " + bookRequestDTO.getIsbn());
+            throw new RuntimeException("Esiste già un libro con ISBN " + bookRequestDTO.getIsbn());
         }
 
         // 1. Convertiamo il DTO in Entità
         Book bookToSave = bookMapper.toEntity(bookRequestDTO);
-        
+
         // 2. Salviamo l'Entità nel DB
         Book savedBook = bookRepository.save(bookToSave);
-        
+
         // 3. Convertiamo l'Entità salvata in DTO per la risposta
         return bookMapper.toResponseDTO(savedBook);
     }
@@ -64,17 +64,17 @@ public class BookServiceImpl implements BookService {
     @Transactional
     public BookResponseDTO updateBook(String isbn, BookRequestDTO bookRequestDTO) {
         Book existingBook = bookRepository.findByIsbn(isbn)
-                .orElseThrow(() -> new com.ecommerce.backend.exception.ResourceNotFoundException("Libro con ISBN " + isbn + " non trovato"));
+                .orElseThrow(() -> new RuntimeException("Libro con ISBN " + isbn + " non trovato"));
 
         // Non permettiamo di cambiare l'ISBN, aggiorniamo solo gli altri campi
         existingBook.setTitle(bookRequestDTO.getTitle());
         existingBook.setAuthor(bookRequestDTO.getAuthor());
         existingBook.setPrice(bookRequestDTO.getPrice());
         existingBook.setStockQuantity(bookRequestDTO.getStockQuantity());
-        
+
         // Salviamo le modifiche
         Book updatedBook = bookRepository.save(existingBook);
-        
+
         return bookMapper.toResponseDTO(updatedBook);
     }
 
@@ -82,8 +82,8 @@ public class BookServiceImpl implements BookService {
     @Transactional
     public void deleteBook(String isbn) {
         Book existingBook = bookRepository.findByIsbn(isbn)
-                .orElseThrow(() -> new com.ecommerce.backend.exception.ResourceNotFoundException("Libro con ISBN " + isbn + " non trovato"));
-        
+                .orElseThrow(() -> new RuntimeException("Libro con ISBN " + isbn + " non trovato"));
+
         bookRepository.delete(existingBook);
     }
 }
