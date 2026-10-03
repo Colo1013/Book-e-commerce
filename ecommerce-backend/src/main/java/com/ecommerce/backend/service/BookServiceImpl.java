@@ -2,6 +2,8 @@ package com.ecommerce.backend.service;
 
 import com.ecommerce.backend.dto.BookRequestDTO;
 import com.ecommerce.backend.dto.BookResponseDTO;
+import com.ecommerce.backend.exception.DuplicateResourceException;
+import com.ecommerce.backend.exception.ResourceNotFoundException;
 import com.ecommerce.backend.mapper.BookMapper;
 import com.ecommerce.backend.model.Book;
 import com.ecommerce.backend.repository.BookRepository;
@@ -37,7 +39,7 @@ public class BookServiceImpl implements BookService {
     @Transactional(readOnly = true)
     public BookResponseDTO getBookByIsbn(String isbn) {
         Book book = bookRepository.findByIsbn(isbn)
-                .orElseThrow(() -> new RuntimeException("Libro con ISBN " + isbn + " non trovato"));
+                .orElseThrow(() -> new ResourceNotFoundException("Libro con ISBN " + isbn + " non trovato"));
 
         return bookMapper.toResponseDTO(book);
     }
@@ -47,7 +49,7 @@ public class BookServiceImpl implements BookService {
     public BookResponseDTO createBook(BookRequestDTO bookRequestDTO) {
         // Controllo se l'ISBN esiste già
         if (bookRepository.findByIsbn(bookRequestDTO.getIsbn()).isPresent()) {
-            throw new RuntimeException("Esiste già un libro con ISBN " + bookRequestDTO.getIsbn());
+            throw new DuplicateResourceException("Esiste già un libro con ISBN " + bookRequestDTO.getIsbn());
         }
 
         // 1. Convertiamo il DTO in Entità
@@ -64,7 +66,7 @@ public class BookServiceImpl implements BookService {
     @Transactional
     public BookResponseDTO updateBook(String isbn, BookRequestDTO bookRequestDTO) {
         Book existingBook = bookRepository.findByIsbn(isbn)
-                .orElseThrow(() -> new RuntimeException("Libro con ISBN " + isbn + " non trovato"));
+                .orElseThrow(() -> new ResourceNotFoundException("Libro con ISBN " + isbn + " non trovato"));
 
         // Non permettiamo di cambiare l'ISBN, aggiorniamo solo gli altri campi
         existingBook.setTitle(bookRequestDTO.getTitle());
@@ -82,7 +84,7 @@ public class BookServiceImpl implements BookService {
     @Transactional
     public void deleteBook(String isbn) {
         Book existingBook = bookRepository.findByIsbn(isbn)
-                .orElseThrow(() -> new RuntimeException("Libro con ISBN " + isbn + " non trovato"));
+                .orElseThrow(() -> new ResourceNotFoundException("Libro con ISBN " + isbn + " non trovato"));
 
         bookRepository.delete(existingBook);
     }

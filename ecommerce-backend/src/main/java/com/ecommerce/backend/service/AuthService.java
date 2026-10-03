@@ -3,6 +3,7 @@ package com.ecommerce.backend.service;
 import com.ecommerce.backend.dto.auth.AuthRequestDTO;
 import com.ecommerce.backend.dto.auth.AuthResponseDTO;
 import com.ecommerce.backend.dto.auth.RegisterRequestDTO;
+import com.ecommerce.backend.exception.DuplicateResourceException;
 import com.ecommerce.backend.model.Role;
 import com.ecommerce.backend.model.User;
 import com.ecommerce.backend.repository.UserRepository;
@@ -29,7 +30,7 @@ public class AuthService {
         
         // 1. Controlliamo se l'utente esiste già per evitare duplicati
         if(repository.findByEmail(request.getEmail()).isPresent()) {
-            throw new RuntimeException("Un utente con questa email esiste già");
+            throw new DuplicateResourceException("Un utente con questa email esiste già");
         }
 
         // 2. Costruiamo l'Entità User partendo dal DTO

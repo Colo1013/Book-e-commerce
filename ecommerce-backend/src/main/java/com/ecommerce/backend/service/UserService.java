@@ -1,5 +1,6 @@
 package com.ecommerce.backend.service;
 
+import com.ecommerce.backend.exception.ResourceNotFoundException;
 import com.ecommerce.backend.model.Role;
 import com.ecommerce.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +22,7 @@ public class UserService {
     public void updateUserRole(String email, Role newRole) {
         // 1. Cerchiamo l'utente nel database
         var user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Utente non trovato"));
+                .orElseThrow(() -> new ResourceNotFoundException("Utente non trovato"));
                 
         // 2. Modifichiamo il campo ruolo in memoria
         user.setRole(newRole);
