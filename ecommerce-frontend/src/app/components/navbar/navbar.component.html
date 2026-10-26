@@ -1,0 +1,55 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+  <div class="container">
+    <!-- Brand / Logo del negozio -->
+    <a class="navbar-brand fw-bold" routerLink="/">
+      📚 BookStore
+    </a>
+
+    <!-- Pulsante Toggle per dispositivi mobili (schermi piccoli) -->
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
+      aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarContent">
+      <!-- Voci di navigazione principali (a sinistra) -->
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+            Catalogo Libri
+          </a>
+        </li>
+        <!-- Mostrati solo se l'utente è autenticato -->
+        <li class="nav-item" *ngIf="isLoggedIn$ | async">
+          <a class="nav-link d-flex align-items-center gap-1" routerLink="/cart" routerLinkActive="active">
+            Carrello 🛒
+            <span class="badge bg-primary rounded-pill" *ngIf="(cartItemCount$ | async) as count">
+              {{ count }}
+            </span>
+          </a>
+        </li>
+        <li class="nav-item" *ngIf="isLoggedIn$ | async">
+          <a class="nav-link" routerLink="/orders" routerLinkActive="active">
+            I Miei Ordini 📦
+          </a>
+        </li>
+      </ul>
+
+      <!-- Sezione Autenticazione (a destra) -->
+      <div class="d-flex align-items-center">
+        <!-- Condizione: se loggato mostra tasto Esci, altrimenti tasto Accedi -->
+        <ng-container *ngIf="isLoggedIn$ | async; else loginBtn">
+          <button class="btn btn-outline-danger btn-sm" (click)="logout()">
+            Esci (Logout)
+          </button>
+        </ng-container>
+
+        <ng-template #loginBtn>
+          <a class="btn btn-primary btn-sm" routerLink="/auth">
+            Accedi / Registrati
+          </a>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+</nav>

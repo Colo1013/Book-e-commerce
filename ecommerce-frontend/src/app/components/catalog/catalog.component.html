@@ -1,0 +1,102 @@
+<div class="row mb-4 align-items-center">
+  <div class="col-md-6">
+    <h2 class="fw-bold">📚 Catalogo Libri</h2>
+    <p class="text-muted mb-md-0">Esplora la nostra collezione letteraria e aggiungi i tuoi volumi preferiti al carrello.</p>
+  </div>
+
+  <!-- Barra di Ricerca (Titolo o Autore) -->
+  <div class="col-md-6">
+    <form class="d-flex gap-2" (ngSubmit)="onSearch()">
+      <input
+        type="text"
+        class="form-control"
+        name="searchTerm"
+        [(ngModel)]="searchTerm"
+        placeholder="Cerca per titolo o autore (es. Tolkien, Harry Potter)...">
+      <button type="submit" class="btn btn-primary">
+        🔍 Cerca
+      </button>
+      <button
+        *ngIf="searchTerm"
+        type="button"
+        class="btn btn-outline-secondary"
+        (click)="resetSearch()">
+        Reset
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- Spinner di caricamento durante l'attesa della risposta HTTP -->
+<div *ngIf="isLoading" class="text-center my-5">
+  <div class="spinner-border text-primary" role="status">
+    <span class="visually-hidden">Caricamento in corso...</span>
+  </div>
+  <p class="mt-2 text-muted">Caricamento del catalogo da Spring Boot...</p>
+</div>
+
+<!-- Alert di Errore -->
+<div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+  {{ errorMessage }}
+  <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
+</div>
+
+<!-- Alert di Successo -->
+<div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
+  {{ successMessage }}
+  <button type="button" class="btn-close" (click)="successMessage = ''" aria-label="Close"></button>
+</div>
+
+<!-- Griglia Responsive di Libri in Bootstrap -->
+<div *ngIf="!isLoading && books.length > 0" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+  <div class="col" *ngFor="let book of books">
+    <div class="card h-100 shadow-sm border-0">
+      <div class="card-body d-flex flex-column">
+        
+        <!-- Intestazione: Titolo e Autore -->
+        <h5 class="card-title fw-bold text-dark">{{ book.title }}</h5>
+        <h6 class="card-subtitle mb-3 text-secondary">di {{ book.author }}</h6>
+
+        <!-- Codice ISBN di Business -->
+        <p class="card-text small text-muted mb-2">
+          <strong>ISBN:</strong> <code>{{ book.isbn }}</code>
+        </p>
+
+        <!-- Zona inferiore fissa con Prezzo e Badge Scorte -->
+        <div class="mt-auto pt-3 border-top">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <span class="fs-4 fw-bold text-primary">
+              {{ book.price | currency:'EUR':'symbol':'1.2-2' }}
+            </span>
+            <!-- Badge dinamico colorato a seconda delle copie rimaste -->
+            <span class="badge" [ngClass]="book.stockQuantity > 0 ? 'bg-success' : 'bg-danger'">
+              {{ book.stockQuantity > 0 ? book.stockQuantity + ' disponibili' : 'Esaurito' }}
+            </span>
+          </div>
+
+          <!-- Controlli di acquisto: visibili solo se il libro ha scorte -->
+          <div class="d-flex gap-2" *ngIf="book.stockQuantity > 0">
+            <input type="number" class="form-control form-control-sm text-center" style="width: 75px;"
+              [(ngModel)]="quantities[book.isbn]" min="1" [max]="book.stockQuantity">
+            <button class="btn btn-outline-primary btn-sm flex-grow-1" (click)="addToCart(book)">
+              Aggiungi al Carrello 🛒
+            </button>
+          </div>
+
+          <!-- Pulsante disabilitato se il magazzino è a 0 -->
+          <div *ngIf="book.stockQuantity <= 0">
+            <button class="btn btn-secondary btn-sm w-100" disabled>
+              Attualmente Non Disponibile
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Stato vuoto (Zero libri presenti) -->
+<div *ngIf="!isLoading && books.length === 0 && !errorMessage" class="alert alert-info text-center my-4">
+  Nessun libro trovato nel catalogo.
+</div>

@@ -1,0 +1,61 @@
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+      
+      <!-- La 'Card' di Bootstrap per incorniciare il Form in modo elegante -->
+      <div class="card shadow-sm">
+        <div class="card-body">
+          
+          <!-- Il titolo cambia dinamicamente -->
+          <h3 class="card-title text-center mb-4">
+            {{ isLoginMode ? 'Accedi' : 'Registrati' }}
+          </h3>
+
+          <!-- Mostra il box d'errore rosso solo se c'è un testo nell'errorMessage -->
+          <div *ngIf="errorMessage" class="alert alert-danger">
+            {{ errorMessage }}
+          </div>
+
+          <!-- L'evento (ngSubmit) chiama il nostro TypeScript quando si preme invio -->
+          <form (ngSubmit)="onSubmit()">
+            
+            <!-- Campi esclusivi per la Registrazione (Spariscono in Login grazie all'ngIf) -->
+            <div *ngIf="!isLoginMode" class="mb-3">
+              <label class="form-label">Nome</label>
+              <!-- Il [(ngModel)] tiene sincronizzato il campo con la variabile TypeScript -->
+              <input type="text" class="form-control" name="name" [(ngModel)]="name" required>
+            </div>
+            
+            <div *ngIf="!isLoginMode" class="mb-3">
+              <label class="form-label">Cognome</label>
+              <input type="text" class="form-control" name="surname" [(ngModel)]="surname" required>
+            </div>
+
+            <!-- Campi sempre visibili -->
+            <div class="mb-3">
+              <label class="form-label">Email</label>
+              <input type="email" class="form-control" name="email" [(ngModel)]="email" required>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label">Password</label>
+              <input type="password" class="form-control" name="password" [(ngModel)]="password" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">
+              {{ isLoginMode ? 'Login' : 'Crea Account' }}
+            </button>
+          </form>
+
+          <!-- Tasto per passare da Login a Registrazione -->
+          <div class="text-center mt-3">
+            <button class="btn btn-link text-decoration-none" (click)="toggleMode()">
+              {{ isLoginMode ? 'Non hai un account? Registrati' : 'Hai già un account? Accedi' }}
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

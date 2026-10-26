@@ -24,7 +24,7 @@ public class DataSeeder implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         
-        // 1. SEEDING DEGLI UTENTI (Il Paziente Zero)
+        // 1. SEEDING DEGLI UTENTI (Admin e Utente Cliente di test)
         if (userRepository.findByEmail("admin@ecommerce.com").isEmpty()) {
             com.ecommerce.backend.model.User admin = com.ecommerce.backend.model.User.builder()
                     .firstName("Super")
@@ -38,27 +38,41 @@ public class DataSeeder implements CommandLineRunner {
             System.out.println("✅ SECURITY SEEDING: Creato utente ADMIN di default (admin@ecommerce.com / admin123)");
         }
 
-        // 2. SEEDING DEI LIBRI
-        if (bookService.getAllBooks().isEmpty()) {
-            
-            BookRequestDTO book1 = new BookRequestDTO();
-            book1.setIsbn("978-88-04-66823-7");
-            book1.setTitle("Il Signore degli Anelli");
-            book1.setAuthor("J.R.R. Tolkien");
-            book1.setPrice(new BigDecimal("25.50"));
-            book1.setStockQuantity(10);
-            
-            BookRequestDTO book2 = new BookRequestDTO();
-            book2.setIsbn("978-88-9381-872-9");
-            book2.setTitle("Harry Potter e la Pietra Filosofale");
-            book2.setAuthor("J.K. Rowling");
-            book2.setPrice(new BigDecimal("15.00"));
-            book2.setStockQuantity(5);
-            
-            bookService.createBook(book1);
-            bookService.createBook(book2);
-            
-            System.out.println("✅ DATA SEEDING COMPLETATO: Letti fittizi inseriti nel DB H2.");
+        if (userRepository.findByEmail("user@ecommerce.com").isEmpty()) {
+            com.ecommerce.backend.model.User standardUser = com.ecommerce.backend.model.User.builder()
+                    .firstName("Mario")
+                    .lastName("Rossi")
+                    .email("user@ecommerce.com")
+                    .password(passwordEncoder.encode("user123"))
+                    .role(com.ecommerce.backend.model.Role.USER)
+                    .build();
+
+            userRepository.save(standardUser);
+            System.out.println("✅ SECURITY SEEDING: Creato utente USER di default (user@ecommerce.com / user123)");
         }
+
+        // 2. SEEDING DEI LIBRI (Catalogo iniziale ricco per testare ricerca, carrello e giacenze)
+        if (bookService.getAllBooks().isEmpty()) {
+            createSeedBook("978-88-04-66823-7", "Il Signore degli Anelli", "J.R.R. Tolkien", "25.50", 10);
+            createSeedBook("978-88-452-9261-3", "Lo Hobbit", "J.R.R. Tolkien", "14.90", 8);
+            createSeedBook("978-88-9381-872-9", "Harry Potter e la Pietra Filosofale", "J.K. Rowling", "15.00", 5);
+            createSeedBook("978-88-04-68060-4", "1984", "George Orwell", "12.50", 12);
+            createSeedBook("978-88-04-67181-7", "La Fattoria degli Animali", "George Orwell", "10.00", 7);
+            createSeedBook("978-88-06-21943-7", "Il Nome della Rosa", "Umberto Eco", "18.00", 6);
+            createSeedBook("978-88-203-9127-0", "Clean Code: Guida allo sviluppo agile", "Robert C. Martin", "38.00", 4);
+            createSeedBook("978-88-07-90058-7", "Divina Commedia", "Dante Alighieri", "22.00", 0); // 0 copie per testare lo stato "Esaurito"
+
+            System.out.println("✅ DATA SEEDING COMPLETATO: 8 libri inseriti nel database.");
+        }
+    }
+
+    private void createSeedBook(String isbn, String title, String author, String price, int stock) {
+        BookRequestDTO dto = new BookRequestDTO();
+        dto.setIsbn(isbn);
+        dto.setTitle(title);
+        dto.setAuthor(author);
+        dto.setPrice(new BigDecimal(price));
+        dto.setStockQuantity(stock);
+        bookService.createBook(dto);
     }
 }

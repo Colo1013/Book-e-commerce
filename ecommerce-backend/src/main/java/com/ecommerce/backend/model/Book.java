@@ -33,4 +33,14 @@ public class Book {
     private BigDecimal price;
 
     private Integer stockQuantity;
+
+    /**
+     * @Version abilita l'Optimistic Locking fornito da Spring Data JPA e Hibernate.
+     * Serve a prevenire problemi di concorrenza, come la vendita di un libro oltre le giuste quantità (overselling).
+     * Quando due transazioni concorrenti cercano di aggiornare lo stesso libro,
+     * JPA verifica questa colonna: la prima transazione va a buon fine e incrementa la versione,
+     * la seconda fallisce lanciando una ObjectOptimisticLockingFailureException.
+     */
+    @Version
+    private Long version;
 }

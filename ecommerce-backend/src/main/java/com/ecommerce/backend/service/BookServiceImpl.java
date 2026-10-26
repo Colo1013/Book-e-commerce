@@ -37,6 +37,24 @@ public class BookServiceImpl implements BookService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<BookResponseDTO> searchBooks(String search) {
+        // 1. Se il parametro di ricerca è assente o contiene solo spazi bianchi,
+        // riutilizziamo getAllBooks() per restituire l'intero catalogo.
+        if (search == null || search.isBlank()) {
+            return getAllBooks();
+        }
+
+        // 2. Puliamo eventuali spazi iniziali/finali (trim) e cerchiamo la parola
+        // sia nella colonna 'title' sia nella colonna 'author'.
+        String cleanQuery = search.trim();
+        return bookRepository.findByTitleContainingIgnoreCaseOrAuthorContainingIgnoreCase(cleanQuery, cleanQuery)
+                .stream()
+                .map(bookMapper::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public BookResponseDTO getBookByIsbn(String isbn) {
         Book book = bookRepository.findByIsbn(isbn)
                 .orElseThrow(() -> new ResourceNotFoundException("Libro con ISBN " + isbn + " non trovato"));

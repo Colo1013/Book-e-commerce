@@ -64,7 +64,14 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- H2 Database: Database in-memory per lo sviluppo e i test -->
+        <!-- PostgreSQL Driver: Driver JDBC ufficiale per connettere Spring Boot al DB PostgreSQL locale -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- H2 Database: Usato a runtime (modalità su file persistente) e nei test (in-memory) -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>

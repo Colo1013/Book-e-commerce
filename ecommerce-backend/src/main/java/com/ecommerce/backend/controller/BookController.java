@@ -24,8 +24,9 @@ public class BookController {
     private final BookService bookService;
 
     @GetMapping
-    public ResponseEntity<List<BookResponseDTO>> getAllBooks() {
-        return ResponseEntity.ok(bookService.getAllBooks());
+    public ResponseEntity<List<BookResponseDTO>> getAllBooks(
+            @RequestParam(required = false) String search) {
+        return ResponseEntity.ok(bookService.searchBooks(search));
     }
 
     @GetMapping("/{isbn}")

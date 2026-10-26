@@ -18,6 +18,15 @@ public interface BookService {
     List<BookResponseDTO> getAllBooks();
 
     /**
+     * Cerca i libri per parola chiave (nel titolo o nell'autore).
+     * Se la parola chiave è nulla o vuota, restituisce l'intero catalogo.
+     *
+     * @param search Parola chiave opzionale inserita dall'utente.
+     * @return La lista dei libri filtrati (convertiti in DTO).
+     */
+    List<BookResponseDTO> searchBooks(String search);
+
+    /**
      * Cerca un libro specifico tramite il suo codice ISBN.
      * @param isbn Il codice identificativo del libro.
      * @return Il DTO del libro se trovato.

@@ -1,5 +1,6 @@
 package com.ecommerce.backend.security;
 
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -10,6 +11,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -49,33 +51,39 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // 2. Estraiamo il token puro (saltando i primi 7 caratteri che sono "Bearer ")
         jwt = authHeader.substring(7);
         
-        // 3. Chiediamo al JwtService di estrarre l'email. 
-        // ATTENZIONE: Questo passaggio esegue anche la validazione matematica della firma!
-        userEmail = jwtService.extractUsername(jwt);
-        
-        // Se c'è un'email nel token e Spring non ha ancora registrato questo utente come "Loggato" per questa richiesta
-        if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        try {
+            // 3. Chiediamo al JwtService di estrarre l'email. 
+            // ATTENZIONE: Questo passaggio esegue anche la validazione matematica della firma!
+            userEmail = jwtService.extractUsername(jwt);
             
-            // Prendiamo i dati dell'utente dal DB
-            UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
-            
-            // Verifichiamo che il token non sia scaduto e sia coerente
-            if (jwtService.isTokenValid(jwt, userDetails)) {
+            // Se c'è un'email nel token e Spring non ha ancora registrato questo utente come "Loggato" per questa richiesta
+            if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 
-                // 4. Creiamo il "Pass" ufficiale di Spring Security per dirgli che l'utente è autenticato
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails,
-                        null,
-                        userDetails.getAuthorities()
-                );
-                authToken.setDetails(
-                        new WebAuthenticationDetailsSource().buildDetails(request)
-                );
+                // Prendiamo i dati dell'utente dal DB
+                UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
                 
-                // 5. SCRIVIAMO NELLA MEMORIA A BREVE TERMINE DI SPRING (SecurityContextHolder).
-                // Spring si ricorderà di questo utente SOLO per la durata di questa specifica richiesta HTTP!
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+                // Verifichiamo che il token non sia scaduto e sia coerente
+                if (jwtService.isTokenValid(jwt, userDetails)) {
+                    
+                    // 4. Creiamo il "Pass" ufficiale di Spring Security per dirgli che l'utente è autenticato
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            userDetails.getAuthorities()
+                    );
+                    authToken.setDetails(
+                            new WebAuthenticationDetailsSource().buildDetails(request)
+                    );
+                    
+                    // 5. SCRIVIAMO NELLA MEMORIA A BREVE TERMINE DI SPRING (SecurityContextHolder).
+                    // Spring si ricorderà di questo utente SOLO per la durata di questa specifica richiesta HTTP!
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
             }
+        } catch (JwtException | UsernameNotFoundException | IllegalArgumentException ex) {
+            // Se il token è scaduto, manomesso o l'utente non esiste più nel DB (es. dopo riavvio di H2 in-memory),
+            // puliamo il contesto di sicurezza senza mandare in crash la catena dei filtri.
+            SecurityContextHolder.clearContext();
         }
         
         // 6. Passiamo la palla al prossimo filtro o al Controller
